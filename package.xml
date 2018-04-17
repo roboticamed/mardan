@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mardan</name>
+  <version>0.0.0</version>
+  <description>The mardan robot package</description>
+
+  <maintainer email="juanda0718@gmail.com">Juan David Adarve Bermudez</maintainer>
+
+  <license>BSD</license>
+
+
+  <!-- Url tags are optional, but multiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- Example: -->
+  <!-- <url type="website">http://wiki.ros.org/mardan</url> -->
+
+
+  <author email="juanda0718@gmail.com">Juan David Adarve Bermudez</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>mardan_msgs</depend>
+  
+  <exec_depend>message_runtime</exec_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
