@@ -21,6 +21,7 @@
 
   <depend>rospy</depend>
   <depend>mardan_msgs</depend>
+  <depend>geometry_msgs</depend>
   
   <exec_depend>message_runtime</exec_depend>
 

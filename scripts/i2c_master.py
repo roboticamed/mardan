@@ -12,7 +12,6 @@ i2cBus = None
 def i2cServiceCallback(request):
     global i2cBus
     
-    
     if len(request.dataIn) > 0:
         
         data = [ord(c) for c in request.dataIn]
