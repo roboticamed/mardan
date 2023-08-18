@@ -15,7 +15,7 @@ jobs:
           - uses: actions/checkout@v3
           - name: Build base container
             run: |
-              docker build --file src/ros/mardan/docker/base.dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" .
+              docker build --file src/ros/mardan/docker/mardan_base_noetic.dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" .
           - name: Log in to registry
             run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           - name: Push image

@@ -3,7 +3,7 @@
 ## Runtime container build
 
 ```bash
-docker build --file src/ros/mardan/docker/base.dockerfile --tag "mardan_base_noetic:local" .
+docker build --file src/ros/mardan/docker/mardan_base_noetic.dockerfile --tag "mardan_base_noetic:local" .
 ```
 
 ## Development using runtime container
