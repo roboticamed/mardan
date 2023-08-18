@@ -9,7 +9,7 @@ docker build --file src/ros/runtime/mardan_runtime.dockerfile --tag "mardan_runt
 ## Development using runtime container
 
 ```bash
-docker run -it --rm --mount type=bind,source="$(pwd)"/src/ros/catkin_ws,target=/root/catkin_ws mardan_runtime:local /bin/bash
+docker run -it --rm --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ mardan_runtime:local /bin/bash
 ```
 
 ## Build
