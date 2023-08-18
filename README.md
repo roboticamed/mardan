@@ -3,13 +3,13 @@
 ## Runtime container build
 
 ```bash
-docker build --file src/ros/runtime/mardan_runtime.dockerfile --tag "mardan_runtime:local" .
+docker build --file src/ros/mardan/docker/base.dockerfile --tag "mardan_base_noetic:local" .
 ```
 
 ## Development using runtime container
 
 ```bash
-docker run -it --rm --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ mardan_runtime:local /bin/bash
+docker run -it --rm --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ mardan_base_noetic:local /bin/bash
 ```
 
 ## Build
