@@ -11,10 +11,7 @@ on:
 jobs:
     base_image:
         name: Build base container
-        runs-on: ${{ matrix.os }}
-        strategy:
-            matrix:
-                os: [ubuntu-latest, self-hosted]
+        runs-on: ubuntu-latest
         permissions:
             packages: write
             contents: read
@@ -24,13 +21,18 @@ jobs:
           # used to propagate the name of the image (e.g. ghcr.io/roboticamed/mardan/mardan_base_noetic:latest) to the dependant jobs
           image_name: ${{ steps.push.outputs.image_name }}
         steps:
+          - id: qemu
+            uses: docker/setup-qemu-action@v2
+            with:
+              platforms: "arm64"
           - id: checkout
             uses: actions/checkout@v3
           - id: build
             name: Build
             run: >
-              docker build
+              docker buildx build
               --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
+              --platform linux/amd64,linux/arm64
               --tag $IMAGE_NAME
               --label "runnumber=${GITHUB_RUN_ID}"
               .
@@ -53,10 +55,11 @@ jobs:
     
     runtime_image:
       name: Build runtime container
-      runs-on: ${{ matrix.os }}
-      strategy:
-          matrix:
-              os: [ubuntu-latest, self-hosted]
+      # runs-on: ${{ matrix.os }}
+      # strategy:
+      #     matrix:
+      #         os: [ubuntu-latest, self-hosted]
+      runs-on: ubuntu-latest
       needs:
         - base_image
       permissions:
@@ -66,14 +69,19 @@ jobs:
         IMAGE_NAME: mardan_noetic
         BASE_IMAGE: ${{ needs.base_image.outputs.image_name }}
       steps:
+        - id: qemu
+          uses: docker/setup-qemu-action@v2
+          with:
+            platforms: "arm64"
         - id: checkout
           name: Checkout
           uses: actions/checkout@v3
         - id: build
           name: Build
           run: >
-            docker build --build-arg="BASE_IMAGE=$BASE_IMAGE" 
+            docker buildx build --build-arg="BASE_IMAGE=$BASE_IMAGE" 
             --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
+            --platform linux/amd64,linux/arm64
             --tag $IMAGE_NAME
             --label "runnumber=${GITHUB_RUN_ID}"
             .
