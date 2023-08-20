@@ -25,8 +25,12 @@ jobs:
             uses: actions/checkout@v3
           - id: build
             name: Build base container
-            run: |
-              docker build --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" .
+            run: >
+              docker build
+              --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
+              --tag $IMAGE_NAME
+              --label "runnumber=${GITHUB_RUN_ID}"
+              .
           - id: login
             name: Log in to registry
             run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
@@ -58,9 +62,12 @@ jobs:
       steps:
         - uses: actions/checkout@v3
         - name: Build base container
-          run: |
+          run: >
             docker build --build-arg="BASE_IMAGE=$BASE_IMAGE" 
-            --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" .
+            --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
+            --tag $IMAGE_NAME
+            --label "runnumber=${GITHUB_RUN_ID}"
+            .
         - name: Log in to registry
           run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
         - name: Push image
