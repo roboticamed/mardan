@@ -1,21 +1,31 @@
-name: main
+name: docker_build
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/ros/mardan/docker/mardan_base_noetic.dockerfile
+  pull_request:
+    branches:
+      - main
+    paths:
+      - src/ros/mardan/docker/mardan_base_noetic.dockerfile
 
-env:
-  IMAGE_NAME: mardan_noetic
 jobs:
-    build:
+    base_image:
         name: Build base container
         runs-on: ubuntu-latest
         permissions:
             packages: write
             contents: read
+        env:
+          IMAGE_NAME: mardan_base_noetic
         steps:
           - uses: actions/checkout@v3
           - name: Build base container
             run: |
-              docker build --file src/ros/mardan/docker/mardan_noetic.dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" .
+              docker build --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}" .
           - name: Log in to registry
             run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           - name: Push image
@@ -29,3 +39,4 @@ jobs:
               echo VERSION=$VERSION
               docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
               docker push $IMAGE_ID:$VERSION
+      

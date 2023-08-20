@@ -14,3 +14,6 @@ RUN apt update \
     ros-noetic-cv-bridge \
     ros-noetic-teleop-twist-keyboard \
     && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash"]
