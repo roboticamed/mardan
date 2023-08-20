@@ -4,8 +4,6 @@ project(mardan)
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
-catkin_python_setup()
-
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -114,6 +112,9 @@ catkin_package(
 #  DEPENDS system_lib
 )
 
+
+catkin_python_setup()
+
 ###########
 ## Build ##
 ###########
@@ -162,9 +163,9 @@ include_directories(
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
+# enumerate all the installable programs (wildcard * does not work)
 install(PROGRAMS
-   scripts/*
-   nodes/*
+   nodes/motor_control
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
