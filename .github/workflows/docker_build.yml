@@ -11,7 +11,10 @@ on:
 jobs:
     base_image:
         name: Build base container
-        runs-on: ubuntu-latest
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os: [ubuntu-latest, self-hosted]
         permissions:
             packages: write
             contents: read
@@ -50,7 +53,10 @@ jobs:
     
     runtime_image:
       name: Build runtime container
-      runs-on: ubuntu-latest
+      runs-on: ${{ matrix.os }}
+      strategy:
+          matrix:
+              os: [ubuntu-latest, self-hosted]
       needs:
         - base_image
       permissions:
