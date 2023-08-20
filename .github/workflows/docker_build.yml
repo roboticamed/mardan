@@ -19,7 +19,7 @@ jobs:
           IMAGE_NAME: mardan_base_noetic
         outputs:
           # used to propagate the name of the image (e.g. ghcr.io/roboticamed/mardan/mardan_base_noetic:latest) to the dependant jobs
-          image_name: ${{ steps.push.outputs.image_name }}
+          image_name: ${{ steps.calculate_image_name.outputs.image_name }}
         steps:
           - id: checkout
             uses: actions/checkout@v3
@@ -30,19 +30,10 @@ jobs:
           - id: setup_buildx
             name: Set up Docker Buildx
             uses: docker/setup-buildx-action@v2
-          - id: build
-            name: Build
-            run: >
-              docker buildx build
-              --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
-              --platform linux/amd64,linux/arm64
-              --tag $IMAGE_NAME
-              --label "runnumber=${GITHUB_RUN_ID}"
-              .
           - id: login
             name: Log in to registry
             run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-          - id: push
+          - id: calculate_image_name
             name: Push image
             run: |
               IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
@@ -52,9 +43,31 @@ jobs:
               [ "$VERSION" == "main" ] && VERSION=latest
               echo IMAGE_ID=$IMAGE_ID
               echo VERSION=$VERSION
-              docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-              docker push $IMAGE_ID:$VERSION
               echo "image_name=$IMAGE_ID:$VERSION" >> "$GITHUB_OUTPUT"
+          - id: build
+            name: Build and push
+            run: >
+              docker buildx build
+              --push
+              --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
+              --platform linux/amd64,linux/arm64
+              --tag ${{ steps.calculate_image_name.outputs.image_name }}
+              --label "runnumber=${GITHUB_RUN_ID}"
+              .
+          
+          # - id: push
+          #   name: Push image
+          #   run: |
+          #     IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+          #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+          #     VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          #     [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          #     [ "$VERSION" == "main" ] && VERSION=latest
+          #     echo IMAGE_ID=$IMAGE_ID
+          #     echo VERSION=$VERSION
+          #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+          #     docker push $IMAGE_ID:$VERSION
+          #     echo "image_name=$IMAGE_ID:$VERSION" >> "$GITHUB_OUTPUT"
     
     runtime_image:
       name: Build runtime container
@@ -71,6 +84,9 @@ jobs:
       env:
         IMAGE_NAME: mardan_noetic
         BASE_IMAGE: ${{ needs.base_image.outputs.image_name }}
+      outputs:
+          # used to propagate the name of the image (e.g. ghcr.io/roboticamed/mardan/mardan_base_noetic:latest) to the dependant jobs
+          image_name: ${{ steps.calculate_image_name.outputs.image_name }}
       steps:
         - id: checkout
           name: Checkout
@@ -82,19 +98,10 @@ jobs:
         - id: setup_buildx
           name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v2
-        - id: build
-          name: Build
-          run: >
-            docker buildx build --build-arg="BASE_IMAGE=$BASE_IMAGE" 
-            --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
-            --platform linux/amd64,linux/arm64
-            --tag $IMAGE_NAME
-            --label "runnumber=${GITHUB_RUN_ID}"
-            .
         - id: login
           name: Log in to registry
           run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-        - id: push
+        - id: calculate_image_name
           name: Push image
           run: |
             IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
@@ -104,5 +111,28 @@ jobs:
             [ "$VERSION" == "main" ] && VERSION=latest
             echo IMAGE_ID=$IMAGE_ID
             echo VERSION=$VERSION
-            docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-            docker push $IMAGE_ID:$VERSION
+            echo "image_name=$IMAGE_ID:$VERSION" >> "$GITHUB_OUTPUT"
+        - id: build
+          name: Build and push
+          run: >
+            docker buildx build
+            --push
+            --build-arg="BASE_IMAGE=$BASE_IMAGE"
+            --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
+            --platform linux/amd64,linux/arm64
+            --tag ${{ steps.calculate_image_name.outputs.image_name }}
+            --label "runnumber=${GITHUB_RUN_ID}"
+            .
+        
+        # - id: push
+        #   name: Push image
+        #   run: |
+        #     IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
+        #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+        #     VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+        #     [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+        #     [ "$VERSION" == "main" ] && VERSION=latest
+        #     echo IMAGE_ID=$IMAGE_ID
+        #     echo VERSION=$VERSION
+        #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+        #     docker push $IMAGE_ID:$VERSION
