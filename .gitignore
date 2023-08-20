@@ -1,2 +1,13 @@
 # IPython checkpoints
 .ipynb_checkpoints
+
+**/*.bash_history
+
+src/ros/.ros
+src/ros/.python_history
+
+# Pyhton
+**/__pycache__
+
+
+.vscode

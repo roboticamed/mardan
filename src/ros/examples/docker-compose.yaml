@@ -1,0 +1,43 @@
+# Inside of the Raspberry Pi, build the image following the instruction in the README.
+# Then, run the following command to start the docker compose.
+#
+# docker-compose up -d
+#
+# To operate the robot with the keyboard:
+#
+# docker exec -it pi_motor_control_1 /bin/bash
+# source /opt/ros/noetic/setup.bash
+# rosrun teleop_twist_keyboard teleop_twist_keyboard.py cmd_vel:=motors/motor_twist
+
+version: '3.9'
+
+networks:
+  ros:
+    driver: bridge
+
+services:
+  ros_master:
+    image: mardan_noetic:local
+    restart: always
+    environment:
+      - ROS_MASTER_URI=http://ros_master:11311
+    networks:
+      - ros
+    ports:
+      - 11311:11311
+    command: |
+      roscore
+
+  motor_control:
+    image: mardan_noetic:local
+    restart: always
+    depends_on:
+      - ros_master
+    environment:
+      - ROS_MASTER_URI=http://ros_master:11311
+    networks:
+      - ros
+    devices:
+      - /dev/i2c-1
+    command: |
+      roslaunch mardan motor_control.launch
