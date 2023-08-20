@@ -23,8 +23,6 @@ RUN source /opt/ros/noetic/setup.bash \
     && catkin_make -DCMAKE_INSTALL_PREFIX=/opt/ros/noetic install \
     && rm -rf /opt/src/catkin_ws
 
-# FIXME: Need to figure out how to configure the ROS environment before running the actual command
-# SHELL ["/bin/bash", "-c"]
-# WORKDIR /opt/src
-# COPY /src/ros/mardan/docker/entrypoint.sh entrypoint.sh
-# ENTRYPOINT ["/bin/bash", "-c", "/opt/src/entrypoint.sh" ]
+SHELL ["/bin/bash", "-c"]
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash"]
