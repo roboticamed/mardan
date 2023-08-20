@@ -17,7 +17,7 @@ networks:
 
 services:
   ros_master:
-    image: mardan_noetic:local
+    image: ghcr.io/roboticamed/mardan_noetic:latest
     restart: always
     environment:
       - ROS_MASTER_URI=http://ros_master:11311
@@ -29,7 +29,7 @@ services:
       roscore
 
   motor_control:
-    image: mardan_noetic:local
+    image: ghcr.io/roboticamed/mardan_noetic:latest
     restart: always
     depends_on:
       - ros_master
