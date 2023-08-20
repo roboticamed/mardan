@@ -21,12 +21,15 @@ jobs:
           # used to propagate the name of the image (e.g. ghcr.io/roboticamed/mardan/mardan_base_noetic:latest) to the dependant jobs
           image_name: ${{ steps.push.outputs.image_name }}
         steps:
-          - id: qemu
+          - id: checkout
+            uses: actions/checkout@v3
+          - id: setup_qemu
             uses: docker/setup-qemu-action@v2
             with:
               platforms: "arm64"
-          - id: checkout
-            uses: actions/checkout@v3
+          - id: setup_buildx
+            name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v2
           - id: build
             name: Build
             run: >
@@ -69,13 +72,16 @@ jobs:
         IMAGE_NAME: mardan_noetic
         BASE_IMAGE: ${{ needs.base_image.outputs.image_name }}
       steps:
-        - id: qemu
-          uses: docker/setup-qemu-action@v2
-          with:
-            platforms: "arm64"
         - id: checkout
           name: Checkout
           uses: actions/checkout@v3
+        - id: setup_qemu
+          uses: docker/setup-qemu-action@v2
+          with:
+            platforms: "arm64"
+        - id: setup_buildx
+          name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v2
         - id: build
           name: Build
           run: >
