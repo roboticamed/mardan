@@ -34,7 +34,7 @@ jobs:
             name: Log in to registry
             run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
           - id: calculate_image_name
-            name: Push image
+            name: Calculate image name
             run: |
               IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
               IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -54,27 +54,9 @@ jobs:
               --tag ${{ steps.calculate_image_name.outputs.image_name }}
               --label "runnumber=${GITHUB_RUN_ID}"
               .
-          
-          # - id: push
-          #   name: Push image
-          #   run: |
-          #     IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-          #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          #     VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          #     [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          #     [ "$VERSION" == "main" ] && VERSION=latest
-          #     echo IMAGE_ID=$IMAGE_ID
-          #     echo VERSION=$VERSION
-          #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          #     docker push $IMAGE_ID:$VERSION
-          #     echo "image_name=$IMAGE_ID:$VERSION" >> "$GITHUB_OUTPUT"
     
     runtime_image:
       name: Build runtime container
-      # runs-on: ${{ matrix.os }}
-      # strategy:
-      #     matrix:
-      #         os: [ubuntu-latest, self-hosted]
       runs-on: ubuntu-latest
       needs:
         - base_image
@@ -102,7 +84,7 @@ jobs:
           name: Log in to registry
           run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
         - id: calculate_image_name
-          name: Push image
+          name: Calculate image name
           run: |
             IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
             IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -123,16 +105,3 @@ jobs:
             --tag ${{ steps.calculate_image_name.outputs.image_name }}
             --label "runnumber=${GITHUB_RUN_ID}"
             .
-        
-        # - id: push
-        #   name: Push image
-        #   run: |
-        #     IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
-        #     IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-        #     VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-        #     [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-        #     [ "$VERSION" == "main" ] && VERSION=latest
-        #     echo IMAGE_ID=$IMAGE_ID
-        #     echo VERSION=$VERSION
-        #     docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-        #     docker push $IMAGE_ID:$VERSION
