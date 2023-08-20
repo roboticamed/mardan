@@ -3,11 +3,13 @@ name: docker_build
 on:
   push:
     branches:
+      - master
       - main
     paths:
       - src/ros/mardan/docker/mardan_base_noetic.dockerfile
   pull_request:
     branches:
+      - master
       - main
     paths:
       - src/ros/mardan/docker/mardan_base_noetic.dockerfile
