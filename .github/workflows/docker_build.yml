@@ -24,7 +24,7 @@ jobs:
           - id: checkout
             uses: actions/checkout@v3
           - id: build
-            name: Build base container
+            name: Build
             run: >
               docker build
               --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
@@ -60,17 +60,22 @@ jobs:
         IMAGE_NAME: mardan_noetic
         BASE_IMAGE: ${{ needs.base_image.outputs.image_name }}
       steps:
-        - uses: actions/checkout@v3
-        - name: Build base container
+        - id: checkout
+          name: Checkout
+          uses: actions/checkout@v3
+        - id: build
+          name: Build
           run: >
             docker build --build-arg="BASE_IMAGE=$BASE_IMAGE" 
             --file src/ros/mardan/docker/$IMAGE_NAME.dockerfile
             --tag $IMAGE_NAME
             --label "runnumber=${GITHUB_RUN_ID}"
             .
-        - name: Log in to registry
+        - id: login
+          name: Log in to registry
           run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-        - name: Push image
+        - id: push
+          name: Push image
           run: |
             IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
             IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
