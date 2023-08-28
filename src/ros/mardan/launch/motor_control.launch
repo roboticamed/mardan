@@ -1,3 +1,3 @@
 <launch>
-  <node name="motor_driver" pkg="mardan" type="motor_driver" />
+  <node name="motor_control" pkg="mardan" type="motor_control" />
 </launch>
