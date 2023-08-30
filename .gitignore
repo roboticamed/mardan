@@ -1,3 +1,5 @@
+build/
+
 # IPython checkpoints
 .ipynb_checkpoints
 

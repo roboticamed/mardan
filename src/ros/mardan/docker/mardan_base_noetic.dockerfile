@@ -13,6 +13,7 @@ RUN apt update \
     python3-yaml \
     ros-noetic-cv-bridge \
     ros-noetic-teleop-twist-keyboard \
+    ros-noetic-image-view \
     && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/ros_entrypoint.sh"]
