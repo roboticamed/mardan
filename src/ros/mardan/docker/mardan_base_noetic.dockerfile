@@ -3,6 +3,8 @@ FROM ros:noetic-ros-base
 # Base dependencies
 RUN apt update \
     && apt install -y \
+    net-tools \
+    inetutils-ping \
     tmux \
     python3-catkin-tools \
     python3-dev \

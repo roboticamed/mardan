@@ -167,6 +167,7 @@ include_directories(
 install(PROGRAMS
    nodes/motor_control
    node/camera_publisher
+   node/camera_http_server
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
