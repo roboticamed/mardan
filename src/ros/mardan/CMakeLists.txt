@@ -166,8 +166,8 @@ include_directories(
 # enumerate all the installable programs (wildcard * does not work)
 install(PROGRAMS
    nodes/motor_control
-   node/camera_publisher
-   node/camera_http_server
+   nodes/camera_publisher
+   nodes/camera_http_server
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
