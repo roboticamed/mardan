@@ -74,8 +74,18 @@ xhost +
 docker run -it --rm \
     -e DISPLAY=$DISPLAY \
     -e ROS_MASTER_URI=http://192.168.68.53:11311 \
+    -e ROS_IP=192.168.68.69 \
     --add-host host.docker.internal:host-gateway \
     --network="host" \
+    --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
+    --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix \
+    --device=/dev/video0 \
+    -p 8080:8080 \
+    mardan_base_noetic:local \
+    /bin/bash
+
+docker run -it --rm \
+    -e DISPLAY=$DISPLAY \
     --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
     --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix \
     --device=/dev/video0 \

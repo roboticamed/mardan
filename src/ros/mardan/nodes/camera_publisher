@@ -18,19 +18,21 @@ import threading
 import rospy
 import cv2
 
-from sensor_msgs.msg import Image
+from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 
 
 class CameraPublisher(object):
 
     def __init__(self,
-                 topic='camera/BGR/raw',
+                 topic='camera/BGR',
                  camindex=0,
                  resolution=(240, 320)):
 
         # creates a ROS publisher for compressed images
-        self.__publisher = rospy.Publisher(topic, Image, queue_size=1)
+        self.__publisher = rospy.Publisher(topic + '/raw', Image, queue_size=1)
+        self.__publisher_compressed = rospy.Publisher(
+            topic + '/compressed', CompressedImage, queue_size=1)
 
         self.__capture = cv2.VideoCapture(camindex)
         if self.__capture is None:
@@ -69,14 +71,17 @@ class CameraPublisher(object):
                 if self.__imgBGR is not None:
 
                     msg = self.__bridge.cv2_to_imgmsg(self.__imgBGR, "bgr8")
+                    compressed_msg = self.__bridge.cv2_to_compressed_imgmsg(
+                        self.__imgBGR, dst_format="png")
 
-                    # publish the image
+                    # publish the image to raw and compressed topics
                     self.__publisher.publish(msg)
+                    self.__publisher_compressed.publish(compressed_msg)
 
                 else:
                     rospy.logerr(
                         'CameraPublisher: error: no image read from camera')
-                    
+
                 self.__rate.sleep()
 
             except Exception as e:
@@ -95,8 +100,7 @@ if __name__ == '__main__':
     rospy.loginfo('camera: start')
 
     # read node parameters
-    topic = rospy.get_param('camera_processing/topic',
-                            'camera/BGR/raw')
+    topic = rospy.get_param('camera_processing/topic', 'camera/BGR')
     camindex = rospy.get_param('camera_processing/camera', 0)
     resolution = rospy.get_param('camera_processing/resolution', [240, 320])
 
@@ -112,4 +116,3 @@ if __name__ == '__main__':
         rospy.loginfo('camera_processing: keyboard interrupt, shutting down')
 
     cv2.destroyAllWindows()
- 
