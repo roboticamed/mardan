@@ -18,7 +18,12 @@ RUN apt update \
     ros-noetic-image-view \
     && rm -rf /var/lib/apt/lists/*
 
+# some weird problem with currently installed dependencies
+RUN rm -rf /usr/local/lib/python3.8/dist-packages/OpenSSL/ \
+    && rm -rf /usr/local/lib/python3.8/dist-packages/pyOpenSSL-23.2.0.dist-info/
+
 RUN python3 -m pip install \ 
+    pyopenssl \
     aiohttp \
     aiortc
 
