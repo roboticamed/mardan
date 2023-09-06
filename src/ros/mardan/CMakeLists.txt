@@ -168,6 +168,7 @@ install(PROGRAMS
    nodes/motor_control
    nodes/camera_publisher
    nodes/camera_http_server
+   nodes/camera_webrtc
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

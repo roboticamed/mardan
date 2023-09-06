@@ -18,5 +18,9 @@ RUN apt update \
     ros-noetic-image-view \
     && rm -rf /var/lib/apt/lists/*
 
+RUN python3 -m pip install \ 
+    aiohttp \
+    aiortc
+
 ENTRYPOINT ["/ros_entrypoint.sh"]
 CMD ["bash"]
