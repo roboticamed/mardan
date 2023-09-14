@@ -21,6 +21,10 @@ import cv2
 from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge
 
+from aiohttp import web
+
+import mardan.streaming.webrtc as webrtc
+
 
 class CameraPublisher(object):
 
@@ -46,9 +50,15 @@ class CameraPublisher(object):
 
         self.__bridge = CvBridge()
 
+        # external image callback. Can be set calling add_image_callback
+        self.__image_callback = None
+
         rospy.loginfo('CameraPublisher: starting capture loop')
         self.__imgThread = threading.Thread(target=self.__imageLoop)
         self.__imgThread.start()
+
+    def add_image_callback(self, callback):
+        self.__image_callback = callback
 
     def __imageLoop(self):
         """
@@ -58,8 +68,7 @@ class CameraPublisher(object):
         compresses it and publishes it in the ROS topic
         """
 
-        # 10 Hz frame rate
-        self.__rate = rospy.Rate(10)
+        self.__rate = rospy.Rate(25)
 
         while not rospy.is_shutdown():
 
@@ -78,6 +87,9 @@ class CameraPublisher(object):
                     self.__publisher.publish(msg)
                     self.__publisher_compressed.publish(compressed_msg)
 
+                    if self.__image_callback is not None:
+                        self.__image_callback(self.__imgBGR)
+
                 else:
                     rospy.logerr(
                         'CameraPublisher: error: no image read from camera')
@@ -87,6 +99,26 @@ class CameraPublisher(object):
             except Exception as e:
                 rospy.logerr(
                     'CameraPublisher: error reading image frame: {0}'.format(e))
+
+
+class ImageCallback(object):
+
+    def __init__(self, video_track):
+        self.__video_track = video_track
+
+    def __call__(self, img):
+        self.__video_track.update(img)
+
+
+def ros_thread(topic, camindex, resolution, image_callback):
+
+    camera_publisher = CameraPublisher(topic, camindex, resolution)
+    camera_publisher.add_image_callback(image_callback)
+
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        rospy.loginfo('camera_processing: keyboard interrupt, shutting down')
 
 
 ###########################################################
@@ -108,11 +140,23 @@ if __name__ == '__main__':
     rospy.loginfo('camera index: {0}'.format(camindex))
     rospy.loginfo('image resolution: {0}'.format(resolution))
 
-    webCamPub = CameraPublisher(topic, camindex, resolution)
+    # WebRTC track for publishing the camera image
+    video_track = webrtc.RawVideoTrack(resolution)
+    image_callback = ImageCallback(video_track)
 
-    try:
-        rospy.spin()
-    except KeyboardInterrupt:
-        rospy.loginfo('camera_processing: keyboard interrupt, shutting down')
+    camera_thread_handler = threading.Thread(
+        target=ros_thread,
+        args=(topic, camindex, resolution, image_callback,))
 
-    cv2.destroyAllWindows()
+    camera_thread_handler.start()
+
+    # TODO: ros hook on shutdown
+
+    #######################################################
+    # NOTE: The WebRTC server must run in the main Thread
+    #       Otherwise, some RuntimeError appears during
+    #       the execution.
+    app = web.Application()
+    webrtc_server = webrtc.WebRTCServer(app)
+    webrtc_server.add_video_track(video_track)
+    web.run_app(app, host='0.0.0.0', port=8080, ssl_context=None)

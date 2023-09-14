@@ -6,13 +6,24 @@
 docker build --file src/ros/mardan/docker/mardan_base_noetic.dockerfile --tag "mardan_base_noetic:local" .
 ```
 
-## Development using base container
+## Runtime container
 
 ```bash
-docker run -it --rm --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix mardan_base_noetic:local /bin/bash
+docker build \
+    --build-arg="BASE_IMAGE=mardan_base_noetic:local" \
+    --file src/ros/mardan/docker/mardan_noetic.dockerfile \
+    --tag "mardan_noetic:local" .
 ```
 
-more advanced command mounting the display and camera:
+To run it:
+
+```bash
+docker run -it --rm mardan_noetic:local /bin/bash
+```
+
+## Development using base container (Host linux)
+
+### Local development
 
 ```bash
 xhost +
@@ -21,9 +32,36 @@ docker run -it --rm -e DISPLAY=$DISPLAY \
     --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
     --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix \
     --device=/dev/video0 \
+    -p 8080:8080 \
     mardan_base_noetic:local \
-    /bin/bash
+    /usr/bin/tmux
 ```
+
+### Connecting to another machine as a ROS worker
+
+Optionally, include extra environment variables to the command above to connect the container above to another machine acting as ROS master:
+
+```
+xhost +
+
+docker run -it --rm \
+    -e DISPLAY=$DISPLAY \
+    -e ROS_MASTER_URI=http://10.0.0.5:11311 \
+    -e ROS_IP=10.0.0.11 \
+    --add-host host.docker.internal:host-gateway \
+    --network="host" \
+    -p 8080:8080 \
+    --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
+    --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix \
+    --device=/dev/video0 \
+    mardan_base_noetic:local \
+    /usr/bin/tmux
+```
+
+where `ROS_MASTER_URI` is the URI of the ROS master machine and `ROS_IP` is the IP address of this machine. Notice that in this case, the container runs with the docker `host` network.
+
+
+### Running commands inside the container
 
 Inside the container, build the catkin workspace as:
 
@@ -40,20 +78,6 @@ then, configure the terminal session
 source devel/setup.bash
 ```
 
-## Runtime container
-
-```bash
-docker build \
---build-arg="BASE_IMAGE=mardan_base_noetic:local" \
---file src/ros/mardan/docker/mardan_noetic.dockerfile \
---tag "mardan_noetic:local" .
-```
-
-To run it:
-
-```bash
-docker run -it --rm mardan_noetic:local /bin/bash
-```
 
 ## Running teleop
 
@@ -63,38 +87,7 @@ ROS already provides a basic keyboard teleop utility that can be used to control
 rosrun teleop_twist_keyboard teleop_twist_keyboard.py cmd_vel:=motors/motor_twist
 ```
 
-
-## Running camera publisher
-
-Start the local development container with access to a camera device and the computer's display:
-
-```bash
-xhost +
-
-docker run -it --rm \
-    -e DISPLAY=$DISPLAY \
-    -e ROS_MASTER_URI=http://10.0.0.5:11311 \
-    -e ROS_IP=10.0.0.11 \
-    --add-host host.docker.internal:host-gateway \
-    --network="host" \
-    --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
-    --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix \
-    --device=/dev/video0 \
-    -p 8080:8080 \
-    mardan_base_noetic:local \
-    /bin/bash
-
-docker run -it --rm \
-    -e DISPLAY=$DISPLAY \
-    --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
-    --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix \
-    --device=/dev/video0 \
-    -p 8080:8080 \
-    mardan_base_noetic:local \
-    /bin/bash
-```
-
-inside the container, run `tmux` to create several terminal sessions. In one of them, build the catkin workspace:
+## Camera node
 
 ```bash
 cd /root/catkin_ws
@@ -117,7 +110,6 @@ then, run the `image_view` executable to visualize the camera feed
 rosrun image_view image_view image:=/camera/BGR/raw
 ```
 
+### WebRTC client
 
-```bash
-rostopic pub -1 /motors/motor_twist geometry_msgs/Twist -- '[0.5, 0.0, 0.0]' '[0.0, 0.0, 0.5]'
-```
+In a web browser, open http://localhost:8080 and start the WebRTC stream from the camera.

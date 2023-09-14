@@ -10,6 +10,7 @@ setup_args = generate_distutils_setup(
     packages=[
         'mardan',
         'mardan.hardware',
+        'mardan.streaming',
     ],
     package_dir={'': 'src'},
 )
