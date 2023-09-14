@@ -1,3 +1,0 @@
-<launch>
-  <node name="camera_http_server" pkg="mardan" type="camera_http_server" />
-</launch>

@@ -73,8 +73,8 @@ xhost +
 
 docker run -it --rm \
     -e DISPLAY=$DISPLAY \
-    -e ROS_MASTER_URI=http://192.168.68.53:11311 \
-    -e ROS_IP=192.168.68.69 \
+    -e ROS_MASTER_URI=http://10.0.0.5:11311 \
+    -e ROS_IP=10.0.0.11 \
     --add-host host.docker.internal:host-gateway \
     --network="host" \
     --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
