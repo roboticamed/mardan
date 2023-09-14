@@ -1,0 +1,3 @@
+<launch>
+  <node name="camera" pkg="mardan" type="camera" />
+</launch>

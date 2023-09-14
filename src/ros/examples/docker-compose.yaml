@@ -41,3 +41,19 @@ services:
       - /dev/i2c-1
     command: |
       roslaunch mardan motor_control.launch
+
+  camera:
+    image: ghcr.io/roboticamed/mardan_noetic:latest
+    restart: always
+    depends_on:
+      - ros_master
+    environment:
+      - ROS_MASTER_URI=http://ros_master:11311
+    networks:
+      - ros
+    ports:
+      - 8080:8080
+    devices:
+      - /dev/video0
+    command: |
+      roslaunch mardan camera.launch
