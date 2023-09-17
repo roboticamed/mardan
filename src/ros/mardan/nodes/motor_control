@@ -6,19 +6,22 @@ from geometry_msgs.msg import Twist
 import mardan.hardware.i2c as i2c
 import threading
 
-class I2CMotorController: 
+
+class I2CMotorController:
 
     def __init__(self):
         i2c.init_i2c_bus()
 
-    def send_speed(self, speed_l, speed_r, log = False):
+    def send_speed(self, speed_l, speed_r, log=False):
         i2c.send_speed(speed_l, speed_r)
         if log:
             rospy.loginfo("Speed Left: %d, Speed Right: %d", speed_l, speed_r)
 
+
 class MotorController:
     def __init__(self, motor_interface):
-        self.sub = rospy.Subscriber("motors/motor_twist", Twist, self.data_processing_callback)
+        self.sub = rospy.Subscriber(
+            "motors/motor_twist", Twist, callback=self.data_processing_callback, queue_size=1)
         self.vel_max = 200
         self.l_val = 0
         self.r_val = 0
@@ -45,6 +48,7 @@ class MotorController:
     def star_thread(self):
         self.thread.start()
 
+
 def main():
     i2c_motor_controller = I2CMotorController()
     rospy.init_node('motor_driver')
@@ -54,6 +58,7 @@ def main():
         rospy.spin()
     except KeyboardInterrupt:
         print("Shutting down")
+
 
 if __name__ == '__main__':
     main()
