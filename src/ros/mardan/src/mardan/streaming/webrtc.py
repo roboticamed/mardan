@@ -190,7 +190,6 @@ class RosImageTopicVideoTrack(VideoStreamTrack):
 
         img = self.__cv_bridge.imgmsg_to_cv2(msg)
         img = cv2.resize(img, (self.__resolution[1], self.__resolution[0]))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         with self.__img_lock:
             self.__img_buffer[...] = img[...]
 
