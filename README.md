@@ -26,12 +26,10 @@ docker run -it --rm mardan_noetic:local /bin/bash
 ### Local development
 
 ```bash
-xhost +
-
-docker run -it --rm -e DISPLAY=$DISPLAY \
+docker run -it --rm \
     --mount type=bind,source="$(pwd)"/src/ros/,target=/root/catkin_ws/src/ \
-    --mount type=bind,source=/tmp/.X11-unix,target=/tmp/.X11-unix \
     --device=/dev/video0 \
+    --network="host" \
     -p 8080:8080 \
     mardan_base_noetic:local \
     /usr/bin/tmux
