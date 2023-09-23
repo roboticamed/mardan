@@ -51,7 +51,7 @@ if (process.env.ROS_DISTRO == "noetic") {
     }
   }
 
-  const pub = nh.advertise('/joy_driver/joy', 'geometry_msgs/Twist')
+  const pub = nh.advertise('/motors/motor_twist', 'geometry_msgs/Twist')
   eventEmitter.on('joystickData', (data) => {
     twistMessage.linear.x = data.steering
     twistMessage.angular.z = data.throttle
