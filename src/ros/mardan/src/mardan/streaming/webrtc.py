@@ -59,6 +59,8 @@ HTML_CONTENT = """
 <body>
 
 <div class="option">
+    <label for="topic_name">Topic name:</label>
+    <input type="text" id="topic_name" name="topic_name"><br><br>
     <input id="use-stun" type="checkbox"/>
     <label for="use-stun">Use STUN server</label>
 </div>
@@ -106,6 +108,7 @@ function negotiate() {
             body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
+                topic: document.getElementById('topic_name').value
             }),
             headers: {
                 'Content-Type': 'application/json'
@@ -163,7 +166,7 @@ class RosImageTopicVideoTrack(VideoStreamTrack):
         super().__init__()
 
         self.__subscriber = rospy.Subscriber(
-            topic, Image, self.__topic_callback)
+            topic, Image, self.__topic_callback, queue_size=1)
 
         self.__cv_bridge = CvBridge()
 
@@ -187,7 +190,6 @@ class RosImageTopicVideoTrack(VideoStreamTrack):
 
         img = self.__cv_bridge.imgmsg_to_cv2(msg)
         img = cv2.resize(img, (self.__resolution[1], self.__resolution[0]))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         with self.__img_lock:
             self.__img_buffer[...] = img[...]
 
@@ -233,6 +235,8 @@ class WebRTCServer(object):
         # list of available tracks
         self.__tracks = list()
 
+        self.__subscribers = dict()
+
         # configure the endpoints served by this class
         app.on_shutdown.append(self.__on_shutdown)
         app.router.add_get("/", self.__serve_index)
@@ -273,9 +277,30 @@ class WebRTCServer(object):
                 await pc.close()
                 self.__pcs.discard(pc)
 
-        # offer all currently available tracks
-        for track in self.__tracks:
-            pc.addTrack(track)
+        # topic the user is willing to subscribe to
+        topic = params["topic"]
+        print("topic: {0}".format(topic))
+
+        if len(topic) > 0:
+
+            subscriber = None
+
+            # check if there is a subscriber for the given topic
+            if topic in self.__subscribers.keys():
+                subscriber = self.__subscribers[topic]
+            else:
+                print("Creating new subscriber for topic {0}".format(topic))
+
+                # create a new subscriber
+                subscriber = RosImageTopicVideoTrack(topic, (240, 320))
+
+            self.__subscribers[topic] = subscriber
+            pc.addTrack(subscriber)
+
+        else:
+            # offer all currently available tracks
+            for track in self.__tracks:
+                pc.addTrack(track)
 
         await pc.setRemoteDescription(offer)
 
