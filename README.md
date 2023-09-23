@@ -21,6 +21,15 @@ To run it:
 docker run -it --rm mardan_noetic:local /bin/bash
 ```
 
+## Server container
+
+```bash
+docker build \
+    --build-arg="BASE_IMAGE=mardan_base_noetic:local" \
+    --file src/server/docker/mardan_server_noetic.dockerfile \
+    --tag "mardan_server_noetic:local" .
+```
+
 ## Development using base container (Host linux)
 
 ### Local development
