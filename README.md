@@ -30,8 +30,7 @@ docker build \
     --tag "mardan_server_noetic:local" .
 ```
 
-To run it:
-
+To run (testing the container):
 ```bash
 docker run -it --rm mardan_server_noetic:local
 ```
