@@ -30,6 +30,14 @@ docker build \
     --tag "mardan_server_noetic:local" .
 ```
 
+To run it:
+
+```bash
+docker run -it --rm mardan_server_noetic:local
+```
+
+Connect using our Android app to the port 5170.
+
 ## Development using base container (Host linux)
 
 ### Local development
