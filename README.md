@@ -32,7 +32,7 @@ docker build \
 
 To run (testing the container):
 ```bash
-docker run -it --rm mardan_server_noetic:local
+docker run -it -p 5170:5170 --rm mardan_server_noetic:local
 ```
 
 Connect using our Android app to the port 5170.
