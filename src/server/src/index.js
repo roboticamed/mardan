@@ -1,19 +1,26 @@
+// https://joycehong0524.medium.com/simple-android-chatting-app-using-socket-io-all-source-code-provided-7b06bc7b5aff
+// https://medium.com/@raj_36650/integrate-socket-io-with-node-js-express-2292ca13d891
 const SERVER_PORT = 5170
 
-const app = require('express')()
-const server = require('http').Server(app)
-const io = require('socket.io')(server)
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const express = require('express')
+const app = express()
 const events = require('events')
-
-var eventEmitter = new events.EventEmitter()
-
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html')
+const path = require('path');
+const eventEmitter = new events.EventEmitter()
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin:'*'
+    }
 });
 
-server.listen(SERVER_PORT, () => {
-  console.log(`listening on *:${SERVER_PORT}`)
-})
+app.use(express.static(path.join(__dirname, 'Joistick')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Joistick', 'index.html'));
+});
 
 io.on('connection', (socket) => {
   console.log('A user connected')
@@ -23,11 +30,21 @@ io.on('connection', (socket) => {
   })
 
   socket.on('robot-command', (data) => {
+    // console.log('robot-command triggered')
+
     const messageData = JSON.parse(data)
     eventEmitter.emit('joystickData', messageData)
+    // console.log(messageData)
   })
 })
 
+const message = {
+  velocityEncoder: 0.0,
+  direction: 0.0,
+  input: 0.0
+}
+
+// ROS-NODEJS
 if (process.env.ROS_DISTRO == "noetic") {
   const rosnodejs = require('rosnodejs')
 
@@ -37,7 +54,6 @@ if (process.env.ROS_DISTRO == "noetic") {
     })
 
   const nh = rosnodejs.nh
-
   const twistMessage = {
     linear : {
       x : 0.0,
@@ -55,6 +71,11 @@ if (process.env.ROS_DISTRO == "noetic") {
   eventEmitter.on('joystickData', (data) => {
     twistMessage.linear.x = data.steering
     twistMessage.angular.z = data.throttle
+    console.log(twistMessage)
     pub.publish(twistMessage)
   })
 }
+
+httpServer.listen(SERVER_PORT,()=>{
+  console.log(`listening on *:${SERVER_PORT}`)
+});
