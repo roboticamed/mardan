@@ -6,16 +6,33 @@ from geometry_msgs.msg import Twist
 import mardan.hardware.i2c as i2c
 import threading
 
-
 class I2CMotorController:
 
     def __init__(self):
         i2c.init_i2c_bus()
 
     def send_speed(self, speed_l, speed_r, log=False):
-        i2c.send_speed(speed_l, speed_r)
-        if log:
-            rospy.loginfo("Speed Left: %d, Speed Right: %d", speed_l, speed_r)
+        try:
+            # Assuming i2c is a global object or module.
+            i2c.send_speed(speed_l, speed_r)
+            if log:
+                rospy.loginfo("Speed Left: %d, Speed Right: %d", speed_l, speed_r)
+        except Exception as e:
+            # Log the error using rospy if it's a ROS node or print otherwise
+            rospy.logerr("Error in send_speed: {}".format(e))
+            # Re-initialize the I2C bus
+            i2c.init_i2c_bus()
+            rospy.loginfo("Re-initialized i2c bus, attempting to resend speeds")
+            try:
+                # Attempt to resend the speeds after re-initialization
+                i2c.send_speed(speed_l, speed_r)
+                if log:
+                    rospy.loginfo("Resend Speed Left: %d, Speed Right: %d", speed_l, speed_r)
+            except Exception as e:
+                # If the resend fails, log the error again.
+                rospy.logerr("Failed to resend speeds: {}".format(e))
+                # You may want to raise the exception here or handle it accordingly
+                raise
 
 
 class MotorController:
